@@ -13,6 +13,21 @@
     "build": "NODE_ENV=production babel src --out-dir dist --source-maps inline",
     "prepublishOnly": "npm run build"
   },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": [
+      "lcov"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/src/bin"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>/__tests__/__fixtures__"
+    ]
+  },
   "author": "kiryutin",
   "keywords": [
     "hexlet",
