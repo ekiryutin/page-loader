@@ -1,5 +1,5 @@
 {
-  "name": "page-loader-kir",
+  "name": "page-loader",
   "version": "1.0.0",
   "description": "Downloads a web-page and saves it to output dir",
   "bin": {
