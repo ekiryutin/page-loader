@@ -4,10 +4,10 @@ import path from 'path';
 import os from 'os';
 import downloadPage from '../src';
 
-const expectedFile = path.resolve(__dirname, '__fixtures__/courses.html');
+const expectedFile = path.resolve(__dirname, '__fixtures__/test.html');
 
-const server = 'https://hexlet.io';
-const page = '/courses';
+const server = 'https://host';
+const page = '/test';
 const testUrl = `${server}${page}`;
 
 let outputDir;
@@ -27,7 +27,7 @@ test(`download ${page}`, async () => {
   await downloadPage(testUrl, outputDir);
 
   const expected = await fs.promises.readFile(expectedFile);
-  const actual = await fs.promises.readFile(`${outputDir}/hexlet-io-courses.html`);
+  const actual = await fs.promises.readFile(`${outputDir}/host-test.html`);
 
   // expect(actual).toBe(expected);
   expect(actual.equals(expected)).toBe(true);
