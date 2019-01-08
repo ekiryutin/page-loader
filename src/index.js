@@ -32,5 +32,5 @@ export default (pageUrl, outputDir) => {
       return savePage(filePath, data);
     })
     .then(() => console.log('Success'));
-    // .catch(error => console.log(error));
+  // .catch(error => console.log(error));
 };
