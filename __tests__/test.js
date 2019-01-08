@@ -7,7 +7,6 @@ import downloadPage from '../src';
 const expectedFile = path.resolve(__dirname, '__fixtures__/test.html');
 
 const server = 'https://host';
-// const page = '/test';
 const pages = ['/test', '/test/'];
 
 let outputDir;
@@ -34,4 +33,27 @@ pages.forEach((page) => {
     // expect(actual).toBe(expected);
     expect(actual.equals(expected)).toBe(true);
   });
+});
+
+test('download to invalid dir', async () => {
+  const page = pages[0];
+  nock(server)
+    .get(page)
+    .replyWithFile(
+      200,
+      expectedFile,
+      { 'Content-Type': 'text/html' },
+    );
+  const testUrl = `${server}${page}`;
+  const invalidDir = 'unknown';
+  /*
+  try {
+    await downloadPage(testUrl, invalidDir);
+    expect(false).toBe(true);
+  } catch(err) {
+    expect(err.code).toEqual('ENOENT');
+  }
+  */
+  await expect(downloadPage(testUrl, invalidDir))
+    .rejects.toThrowErrorMatchingSnapshot();
 });

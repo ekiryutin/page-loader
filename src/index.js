@@ -25,12 +25,10 @@ const savePage = (filePath, data) => {
   return fs.promises.writeFile(filePath, data, 'utf8');
 };
 
-export default (pageUrl, outputDir) => {
-  downloadPage(pageUrl)
-    .then((data) => {
-      const filePath = makeFilePath(outputDir, pageUrl);
-      return savePage(filePath, data);
-    })
-    .then(() => console.log('Success'));
-  // .catch(error => console.log(error));
-};
+export default (pageUrl, outputDir) => downloadPage(pageUrl)
+  .then((data) => {
+    const filePath = makeFilePath(outputDir, pageUrl);
+    return savePage(filePath, data);
+  })
+  .then(() => console.log('Success'));
+// .catch(error => console.log(error));
