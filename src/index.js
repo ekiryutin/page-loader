@@ -20,9 +20,6 @@ const downloadPage = (pageUrl) => {
     .then(response => response.data);
 };
 
-// без BOM'a сохраненная страница открывается в кривой кодировке
-// fs.promises.writeFile(filePath, `\ufeff${data}`, 'utf8');
-
 const savePage = (filePath, data) => {
   console.log(`Save to '${filePath}'`);
   return fs.promises.writeFile(filePath, data, 'utf8');
@@ -34,6 +31,6 @@ export default (pageUrl, outputDir) => {
       const filePath = makeFilePath(outputDir, pageUrl);
       return savePage(filePath, data);
     })
-    .then(() => console.log('Success'))
-    .catch(error => console.log(error));
+    .then(() => console.log('Success'));
+    // .catch(error => console.log(error));
 };
