@@ -30,8 +30,7 @@ pages.forEach((page) => {
     const expected = await fs.promises.readFile(expectedFile);
     const actual = await fs.promises.readFile(`${outputDir}/host-test.html`);
 
-    // expect(actual).toBe(expected);
-    expect(actual.equals(expected)).toBe(true);
+    expect(actual.toString()).toBe(expected.toString());
   });
 });
 
