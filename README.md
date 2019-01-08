@@ -5,8 +5,6 @@ Downloads a web-page and saves it to output dir.
 
 ## Install
 ```
-mkdir <dirname>
-cd <dirname>
 git clone https://github.com/ekiryutin/project-lvl3-s382.git
 cd project-lvl3-s382/
 make install
