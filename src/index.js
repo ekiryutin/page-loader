@@ -3,10 +3,12 @@ import url from 'url';
 import fs from 'fs';
 import _ from 'lodash';
 import cheerio from 'cheerio';
+import debug from 'debug';
 import axios from './lib/axiosAdapter';
 
-// const debug = msg => console.log(msg);
-const debug = msg => msg;
+const logInfo = debug('page-loader:info');
+const logRequest = debug('page-loader:http');
+const logFile = debug('page-loader:file');
 
 const urlToFilename = (pageUrl) => {
   const { hostname, pathname } = url.parse(pageUrl);
@@ -17,27 +19,34 @@ const urlToFilename = (pageUrl) => {
 };
 
 const downloadPage = (pageUrl) => {
-  debug(`Downloading '${pageUrl}'`);
+  logRequest("Downloading '%s'", pageUrl);
   return axios.get(pageUrl)
-    .then(response => response.data);
+    .then((response) => {
+      logRequest(" Downloaded '%s'", pageUrl);
+      return response.data;
+    });
 };
 
 const writeFile = (filePath, data) => {
-  debug(`  Saving '${filePath}'`);
+  logFile("Saving '%s'", filePath);
   return fs.promises.writeFile(filePath, data)
-    .then(() => debug(`    Saved '${filePath}'`));
+    .then(() => logFile(" Saved '%s'", filePath));
 };
 
 const downloadTextResource = (resourceUrl, filePath) => {
-  debug(`  Downloading resource ${resourceUrl}`);
+  logRequest("Downloading `%s'", resourceUrl);
   return axios.get(resourceUrl)
-    .then(response => writeFile(filePath, response.data));
+    .then((response) => {
+      logRequest(" Downloaded `%s'", resourceUrl);
+      return writeFile(filePath, response.data);
+    });
 };
 
 const downloadBinaryResource = (resourceUrl, filePath) => {
-  debug(`  Downloading binary resource ${resourceUrl}`);
+  logRequest("Downloading binary `%s'", resourceUrl);
   return axios.get(resourceUrl, { responseType: 'stream' })
-    .then(response => response.data.pipe(fs.createWriteStream(filePath)));
+    .then(response => response.data.pipe(fs.createWriteStream(filePath)))
+    .then(() => logRequest(" Downloaded `%s'", resourceUrl));
 };
 
 const resourceTypes = {
@@ -64,12 +73,14 @@ const processTag = ($dom, tag, resourceDir) => {
 };
 
 const searchLocalResources = (pageContent, resourceDir) => {
+  logInfo('Analyzing page');
   const $dom = cheerio.load(pageContent, { decodeEntities: false });
 
   const resources = Object.keys(resourceTypes)
     .reduce((acc, tag) => [...acc, ...processTag($dom, tag, resourceDir)], []);
 
-  debug(resources);
+  logInfo('Local resources: %d', resources.length);
+  // logInfo('%j', resources)
   return { $dom, resources };
 };
 
@@ -84,7 +95,7 @@ const downloadResource = (resource, pageUrl, resourcePath) => {
 const downloadResources = (data, pageUrl, resourcePath) => {
   const { resources } = data;
   // if (resources.length === 0) return data; // test required
-
+  logInfo("Create directory '%s'", resourcePath);
   return fs.promises.mkdir((resourcePath))
     .then(() => Promise.all(resources.map(res => downloadResource(res, _.trimEnd(pageUrl, '/'), resourcePath))))
     .then(() => data);
@@ -96,10 +107,10 @@ export default (pageUrl, outputDir) => {
   const resourcePath = path.join(outputDir, resourceDir);
   const basePath = path.join(outputDir, pageFileName);
   const filePath = `${basePath}.html`;
-
+  logInfo('\nStart');
   return downloadPage(pageUrl)
     .then(pageContent => searchLocalResources(pageContent, resourceDir))
     .then(data => downloadResources(data, pageUrl, resourcePath))
     .then(({ $dom }) => writeFile(filePath, $dom.html()))
-    .then(() => debug('Completed'));
+    .then(() => logInfo('Complete'));
 };
