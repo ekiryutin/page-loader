@@ -1,12 +1,9 @@
 import path from 'path';
 import url from 'url';
 import fs from 'fs';
-import axios from 'axios';
-import httpAdapter from 'axios/lib/adapters/http';
 import _ from 'lodash';
 import cheerio from 'cheerio';
-
-axios.defaults.adapter = httpAdapter; // for nock
+import axios from './lib/axiosAdapter';
 
 // const debug = msg => console.log(msg);
 const debug = msg => msg;
