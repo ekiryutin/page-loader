@@ -9,6 +9,7 @@ import axios from './lib/axiosAdapter';
 const logInfo = debug('page-loader:info');
 const logRequest = debug('page-loader:http');
 const logFile = debug('page-loader:file');
+const logError = debug('page-loader:error');
 
 const urlToFilename = (pageUrl) => {
   const { hostname, pathname } = url.parse(pageUrl);
@@ -26,7 +27,7 @@ const downloadPage = (pageUrl) => {
       return response.data;
     })
     .catch((error) => {
-      logRequest(" Response '%s' error: %s", pageUrl, error.message);
+      logError(" Request '%s' failed", pageUrl);
       throw error;
     });
 };
@@ -44,12 +45,6 @@ const downloadTextResource = (resourceUrl, filePath) => {
       logRequest(" Received `%s'", resourceUrl);
       return writeFile(filePath, response.data);
     });
-/*
-    .catch((error) => {
-      logRequest(" Error response '%s': %s %s",
-        resourceUrl, error.response.status, error.response.statusText);
-      // throw error;
-    }); */
 };
 
 const downloadBinaryResource = (resourceUrl, filePath) => {
@@ -65,13 +60,18 @@ const resourceTypes = {
   script: { attr: 'src', download: downloadTextResource },
 };
 
-const processTag = ($dom, tag, resourceDir) => {
+const processTag = ($dom, tag, resourceDir, pageUrl) => {
   const resources = [];
   const src = resourceTypes[tag].attr;
+  const { protocol, hostname } = pageUrl;
+
   $dom(`${tag}[${src}]`).each(function processElement() {
-    const link = $dom(this).attr(src);
+    let link = $dom(this).attr(src);
+    if (_.startsWith(link, '//')) {
+      link = `${protocol}${link}`;
+    }
     const linkUrl = url.parse(link);
-    if (linkUrl.hostname === null) {
+    if (linkUrl.hostname === null || linkUrl.hostname === hostname) {
       const fileName = urlToFilename(linkUrl.pathname);
       const localLink = path.join(resourceDir, fileName);
 
@@ -82,38 +82,49 @@ const processTag = ($dom, tag, resourceDir) => {
   return resources;
 };
 
-const searchLocalResources = (pageContent, resourceDir) => {
+const searchLocalResources = (pageContent, resourceDir, pageUrl) => {
   logInfo('Analyzing page');
   const $dom = cheerio.load(pageContent, { decodeEntities: false });
 
   const resources = Object.keys(resourceTypes)
-    .reduce((acc, tag) => [...acc, ...processTag($dom, tag, resourceDir)], []);
+    .reduce((acc, tag) => [...acc, ...processTag($dom, tag, resourceDir, pageUrl)], []);
 
   logInfo('Local resources: %d', resources.length);
   // logInfo('%j', resources)
   return { $dom, resources };
 };
 
+const tasks = [];
+
 const downloadResource = (resource, pageUrl, resourcePath) => {
   const { download } = resource;
   const resourceUrl = url.resolve(pageUrl, resource.url);
   const filePath = path.join(resourcePath, urlToFilename(resource.url));
 
-  return download(resourceUrl, filePath); // defined in resourceTypes
+  const promise = download(resourceUrl, filePath); // defined in resourceTypes
+  tasks.push({ title: resourceUrl, task: () => promise });
+  return promise
+    .catch(() => {
+      logError(" Request '%s' failed", resourceUrl);
+    });
 };
 
-const downloadResources = (data, pageUrl, resourcePath) => {
+const downloadResources = (data, pageUrl, resourcePath, render) => {
   const { resources } = data;
   // if (resources.length === 0) return data; // test required
   logInfo("Create directory '%s'", resourcePath);
   return fs.promises.mkdir((resourcePath))
-    .then(() => Promise.all(resources.map(res => downloadResource(res, _.trimEnd(pageUrl, '/'), resourcePath))))
+    .then(() => {
+      const promises = resources.map(res => downloadResource(res, _.trimEnd(pageUrl, '/'), resourcePath));
+      render(tasks);
+      return Promise.all(promises);
+    })
     .then(() => data);
 };
 
 const checkDirAccess = dir => fs.promises.access(dir);
 
-export default (pageUrl, outputDir) => {
+export default (pageUrl, outputDir, render = () => {}) => {
   const pageFileName = urlToFilename(pageUrl);
   const resourceDir = `${pageFileName}_files`;
   const resourcePath = path.join(outputDir, resourceDir);
@@ -122,9 +133,9 @@ export default (pageUrl, outputDir) => {
   logInfo('\nStart');
   return checkDirAccess(outputDir)
     .then(() => downloadPage(pageUrl))
-    .then(pageContent => searchLocalResources(pageContent, resourceDir))
-    .then(data => downloadResources(data, pageUrl, resourcePath))
-    .then(({ $dom }) => writeFile(filePath, $dom.html()))
+    .then(pageContent => searchLocalResources(pageContent, resourceDir, url.parse(pageUrl)))
+    .then(data => downloadResources(data, pageUrl, resourcePath, render))
+    .then(data => writeFile(filePath, data.$dom.html()))
     .then(() => {
       logInfo('Complete');
       return filePath;

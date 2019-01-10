@@ -4,6 +4,7 @@ import program from 'commander';
 import path from 'path';
 import downloadPage from '..';
 import getErrorMessage from '../error';
+import render from '../render';
 
 const getFullPath = (pathname = '') => path.resolve(process.cwd(), pathname);
 
@@ -13,7 +14,7 @@ program
   .option('--output [dir]', 'output directory (default is current)')
   .arguments('<url>')
   .action((url) => {
-    downloadPage(url, getFullPath(program.output))
+    downloadPage(url, getFullPath(program.output), render)
       .then(filename => console.log(`Download complete.\nWeb-page '${url}' saved as '${filename}'`))
       .catch((error) => {
         console.error(getErrorMessage(error));
