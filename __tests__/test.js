@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import downloadPage from '../src';
+import getErrorMessage from '../src/error';
 
 const makePath = filename => path.resolve(__dirname, `__fixtures__/${filename}`);
 
@@ -69,4 +70,33 @@ test('download to invalid dir', async () => {
 
   await expect(downloadPage(testUrl, invalidDir))
     .rejects.toThrowErrorMatchingSnapshot();
+});
+
+test('test invalid url', async () => {
+  const page = pages[0];
+  nock(server)
+    .get(page)
+    .reply(404);
+  const testUrl = `${server}${page}`;
+
+  await expect(downloadPage(testUrl, outputDir))
+    .rejects.toThrowErrorMatchingSnapshot();
+});
+
+const testErrors = [
+  { code: 'ENOTFOUND', response: null, msg: 'Invalid host.' },
+  { code: null, response: {}, msg: 'Invalid url.' },
+  { code: null, response: null, msg: '' },
+];
+
+test('test error messages', () => {
+  testErrors.forEach((test) => {
+    const error = new Error('Test');
+    error.code = test.code;
+    error.response = test.response;
+
+    const expected = `Download aborted. ${test.msg}\nError: Test`;
+    const actual = getErrorMessage(error);
+    expect(actual).toBe(expected);
+  });
 });

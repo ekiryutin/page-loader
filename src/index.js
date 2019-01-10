@@ -19,11 +19,15 @@ const urlToFilename = (pageUrl) => {
 };
 
 const downloadPage = (pageUrl) => {
-  logRequest("Downloading '%s'", pageUrl);
+  logRequest("Requesting '%s'", pageUrl);
   return axios.get(pageUrl)
     .then((response) => {
-      logRequest(" Downloaded '%s'", pageUrl);
+      logRequest(" Received '%s'", pageUrl);
       return response.data;
+    })
+    .catch((error) => {
+      logRequest(" Response '%s' error: %s", pageUrl, error.message);
+      throw error;
     });
 };
 
@@ -34,19 +38,25 @@ const writeFile = (filePath, data) => {
 };
 
 const downloadTextResource = (resourceUrl, filePath) => {
-  logRequest("Downloading `%s'", resourceUrl);
+  logRequest("Requesting `%s'", resourceUrl);
   return axios.get(resourceUrl)
     .then((response) => {
-      logRequest(" Downloaded `%s'", resourceUrl);
+      logRequest(" Received `%s'", resourceUrl);
       return writeFile(filePath, response.data);
     });
+/*
+    .catch((error) => {
+      logRequest(" Error response '%s': %s %s",
+        resourceUrl, error.response.status, error.response.statusText);
+      // throw error;
+    }); */
 };
 
 const downloadBinaryResource = (resourceUrl, filePath) => {
-  logRequest("Downloading binary `%s'", resourceUrl);
+  logRequest("Requesting binary `%s'", resourceUrl);
   return axios.get(resourceUrl, { responseType: 'stream' })
     .then(response => response.data.pipe(fs.createWriteStream(filePath)))
-    .then(() => logRequest(" Downloaded `%s'", resourceUrl));
+    .then(() => logRequest(" Received `%s'", resourceUrl));
 };
 
 const resourceTypes = {
@@ -101,6 +111,8 @@ const downloadResources = (data, pageUrl, resourcePath) => {
     .then(() => data);
 };
 
+const checkDirAccess = dir => fs.promises.access(dir);
+
 export default (pageUrl, outputDir) => {
   const pageFileName = urlToFilename(pageUrl);
   const resourceDir = `${pageFileName}_files`;
@@ -108,9 +120,13 @@ export default (pageUrl, outputDir) => {
   const basePath = path.join(outputDir, pageFileName);
   const filePath = `${basePath}.html`;
   logInfo('\nStart');
-  return downloadPage(pageUrl)
+  return checkDirAccess(outputDir)
+    .then(() => downloadPage(pageUrl))
     .then(pageContent => searchLocalResources(pageContent, resourceDir))
     .then(data => downloadResources(data, pageUrl, resourcePath))
     .then(({ $dom }) => writeFile(filePath, $dom.html()))
-    .then(() => logInfo('Complete'));
+    .then(() => {
+      logInfo('Complete');
+      return filePath;
+    });
 };

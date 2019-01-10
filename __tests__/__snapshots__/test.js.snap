@@ -1,3 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`download to invalid dir 1`] = `"ENOENT: no such file or directory, mkdir 'unknown/host-test_files'"`;
+
+exports[`test invalid url 1`] = `"Request failed with status code 404"`;
