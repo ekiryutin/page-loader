@@ -65,8 +65,8 @@ const processTag = ($dom, tag, resourceDir, pageUrl) => {
   const src = resourceTypes[tag].attr;
   const { protocol, hostname } = pageUrl;
 
-  $dom(`${tag}[${src}]`).each(function processElement() {
-    let link = $dom(this).attr(src);
+  $dom(`${tag}[${src}]`).each((index, elem) => {
+    let link = $dom(elem).attr(src);
     if (_.startsWith(link, '//')) {
       link = `${protocol}${link}`;
     }
@@ -75,7 +75,7 @@ const processTag = ($dom, tag, resourceDir, pageUrl) => {
       const fileName = urlToFilename(linkUrl.pathname);
       const localLink = path.join(resourceDir, fileName);
 
-      $dom(this).attr(src, localLink); // replace to local link
+      $dom(elem).attr(src, localLink); // replace to local link
       resources.push({ ...resourceTypes[tag], url: linkUrl.pathname });
     }
   });
