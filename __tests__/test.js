@@ -77,7 +77,7 @@ test('test invalid url', async () => {
   nock(server)
     .get(page)
     .reply(404);
-  const testUrl = `${server}${page}`;
+  const testUrl = `${server}/wrong`;
 
   await expect(downloadPage(testUrl, outputDir))
     .rejects.toThrowErrorMatchingSnapshot();

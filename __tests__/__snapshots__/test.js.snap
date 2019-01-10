@@ -1,5 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`download to invalid dir 1`] = `"ENOENT: no such file or directory, mkdir 'unknown/host-test_files'"`;
+exports[`download to invalid dir 1`] = `"ENOENT: no such file or directory, access 'unknown'"`;
 
-exports[`test invalid url 1`] = `"Request failed with status code 404"`;
+exports[`test invalid url 1`] = `
+"Nock: No match for request {
+  \\"method\\": \\"get\\",
+  \\"url\\": \\"https://host/wrong\\",
+  \\"headers\\": {
+    \\"accept\\": \\"application/json, text/plain, */*\\",
+    \\"user-agent\\": \\"axios/0.18.0\\"
+  }
+}"
+`;
