@@ -23,5 +23,5 @@ Options:
 ```
 
 ## Demo
-[View](https://asciinema.org/a/s8NwW3eFMUCmj1pUou000i4MF)
+[View](https://asciinema.org/a/wjApAiPZ5iajBEoO8GtUUnQGB)
 
