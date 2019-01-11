@@ -6,7 +6,7 @@ Downloads a web-page and saves it to output dir.
 ## Install
 ```
 git clone https://github.com/ekiryutin/page-loader.git
-cd project-lvl3-s382/
+cd page-loader/
 make install
 make build
 sudo npm link
