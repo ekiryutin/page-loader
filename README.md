@@ -1,4 +1,4 @@
-[![Maintainability](https://api.codeclimate.com/v1/badges/7c9492dc347d52ce86c3/maintainability)](https://codeclimate.com/github/ekiryutin/project-lvl3-s382/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/7c9492dc347d52ce86c3/test_coverage)](https://codeclimate.com/github/ekiryutin/project-lvl3-s382/test_coverage) [![Build Status](https://travis-ci.org/ekiryutin/project-lvl3-s382.svg?branch=master)](https://travis-ci.org/ekiryutin/project-lvl3-s382)
+[![Maintainability](https://api.codeclimate.com/v1/badges/7c9492dc347d52ce86c3/maintainability)](https://codeclimate.com/github/ekiryutin/project-lvl3-s382/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/7c9492dc347d52ce86c3/test_coverage)](https://codeclimate.com/github/ekiryutin/project-lvl3-s382/test_coverage) [![Build Status](https://travis-ci.org/ekiryutin/page-loader.svg?branch=master)](https://travis-ci.org/ekiryutin/page-loader)
 
 # Page-Loader
 Downloads a web-page and saves it to output dir.
