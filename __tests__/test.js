@@ -4,6 +4,7 @@ import path from 'path';
 import os from 'os';
 import downloadPage from '../src';
 import getErrorMessage from '../src/error';
+import render from '../src/render';
 
 const makePath = filename => path.resolve(__dirname, `__fixtures__/${filename}`);
 
@@ -99,4 +100,16 @@ test('test error messages', () => {
     const actual = getErrorMessage(error);
     expect(actual).toBe(expected);
   });
+});
+
+test('test render', () => {
+  const tasks = [
+    {
+      title: 'It works',
+      task: () => Promise.resolve('something'),
+    },
+  ];
+  render(tasks); // check if :)
+  render(tasks, true);
+  expect(true).toBe(true);
 });
